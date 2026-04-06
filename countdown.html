@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mi bebota ❤️</title>
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  color: white;
+  text-align: center;
+  background: black;
+  overflow: hidden;
+}
+
+#bg {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.4);
+}
+
+#content {
+  position: relative;
+  top: 15%;
+}
+
+#countdown {
+  font-size: 70px;
+}
+
+#message {
+  font-size: 22px;
+  max-width: 600px;
+  margin: auto;
+}
+
+/* avión */
+#plane {
+  position: absolute;
+  bottom: 40px;
+  font-size: 30px;
+  transition: left 1s linear;
+}
+</style>
+</head>
+
+<body>
+
+<div id="bg"></div>
+
+<div id="content">
+  <h1>✈️ Cada día más cerca de verte, mi bebota ❤️</h1>
+
+
+  <div id="countdown"></div>
+  <h5>21 de Mayo</h5>
+  <br>
+  <div id="message"></div>
+  <br><br>
+  <h4><i>Si quieres puedes ir al menu: "Agregar a pantalla de inicio" de tu celu ;)</i></h4>
+
+</div>
+
+<div id="plane">✈️</div>
+
+<script>
+// SERVICE WORKER
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+
+// FECHAS
+const start = new Date();
+const target = new Date("May 21, 2026");
+const totalDays = Math.ceil((target - start)/(1000*60*60*24));
+
+// FOTOS
+const images = ["foto1.jpg","foto2.jpg","foto3.jpg","foto4.jpg","foto5.jpg","foto6.jpg","foto7.jpg"];
+
+
+// MENSAJES (uno por día dinámico)
+function generarMensaje(dias) {
+  if (dias > 40) return "Aún falta mi bebota… pero ya te estoy extrañando ❤️";
+  if (dias > 35) return "Cada día que pasa me acerca a vos";
+  if (dias > 30) return "Ya empieza a sentirse… falta menos";
+  if (dias > 20) return "Contando los días para abrazarte";
+  if (dias > 15) return "Mi bebota… ya casi estoy ahí";
+  if (dias > 10) return "Cada vez más cerca ❤️";
+  if (dias > 7) return "Falta muy poquito…";
+  if (dias > 5) return "Ya casi…";
+  if (dias > 3) return "Contando horas";
+  if (dias > 1) return "Mañana nos vemos ❤️";
+  if (dias === 1) return "Es hoy… voy a abrazarte ❤️";
+  return "Ya estoy con vos ❤️";
+}
+
+// UPDATE
+function update() {
+  const now = new Date();
+  const dias = Math.ceil((target - now)/(1000*60*60*24));
+
+  document.getElementById("countdown").innerText = dias + " días";
+  document.getElementById("message").innerText = generarMensaje(dias);
+
+  // fondo
+  document.getElementById("bg").style.backgroundImage =
+    "url('" + images[dias % images.length] + "')";
+
+  // avión
+  const progreso = 1 - (dias / totalDays);
+  document.getElementById("plane").style.left = (10 + progreso*80) + "%";
+
+  // pantalla final
+  if (dias <= 0) {
+    document.getElementById("content").innerHTML =
+      "<h1>❤️ Ya estoy en Londres ❤️</h1><p>Estoy yendo a abrazarte, mi bebota...</p>";
+  }
+}
+
+update();
+setInterval(update, 3600000);
+
+</script>
+
+<!-- 🔔 NOTIFICACIONES AVANZADAS -->
+<script>
+async function iniciarNotificaciones() {
+  if (Notification.permission !== "granted") {
+    await Notification.requestPermission();
+  }
+
+  function mensajeDiario(dias) {
+    if (dias > 30) return "Cada día falta menos para verte ❤️";
+    if (dias > 10) return "Ya casi estoy ahí, mi bebota";
+    if (dias > 3) return "Muy poquito… ❤️";
+    if (dias > 1) return "Mañana nos vemos ❤️";
+    if (dias === 1) return "Hoy te abrazo ❤️";
+    return "Ya estoy con vos ❤️";
+  }
+
+  function enviar() {
+    const dias = Math.ceil((target - new Date())/(1000*60*60*24));
+
+    new Notification("Mi bebota ❤️", {
+      body: mensajeDiario(dias),
+      icon: "foto_512x512.png"
+    });
+  }
+
+  enviar();
+  setInterval(enviar, 86400000);
+}
+
+iniciarNotificaciones();
+</script>
+
+</body>
+</html>
