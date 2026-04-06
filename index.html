@@ -2,14 +2,15 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Mi bebota ❤️</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Volver a mi bebota ❤️</title>
 
 <link rel="manifest" href="manifest.json">
 
 <style>
 body {
   margin: 0;
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   color: white;
   text-align: center;
   background: black;
@@ -23,30 +24,55 @@ body {
   background-size: cover;
   background-position: center;
   filter: brightness(0.4);
+  z-index: -1;
 }
 
 #content {
   position: relative;
-  top: 15%;
+  top: 15vh;
+  padding: 0 20px;
 }
 
 #countdown {
   font-size: 70px;
+  font-weight: bold;
+  margin-top: 10px;
 }
 
 #message {
   font-size: 22px;
   max-width: 600px;
-  margin: auto;
+  margin: 20px auto;
+  line-height: 1.4;
 }
 
-/* avión */
+/* Barra de instalación PWA */
+#installBanner {
+  display: none; /* Se oculta por defecto, se muestra con JS */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #e91e63;
+  color: white;
+  padding: 18px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  z-index: 1000;
+  cursor: pointer;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+  box-sizing: border-box;
+}
+
+/* Avión */
 #plane {
   position: absolute;
   bottom: 40px;
   font-size: 30px;
   transition: left 1s linear;
 }
+
 </style>
 </head>
 
@@ -55,109 +81,184 @@ body {
 <div id="bg"></div>
 
 <div id="content">
-  <h1>✈️ Cada día más cerca de verte, mi bebota ❤️</h1>
-
+  <h1>✈️ Cada día más cerca de volver a verte, mi bebota ❤️</h1>
 
   <div id="countdown"></div>
-  <h5>21 de Mayo</h5>
+  <h5>21 de Mayo de 2026</h5>
   <br>
   <div id="message"></div>
   <br><br>
-  <h4><i>Si quieres puedes ir al menu: "Agregar a pantalla de inicio" de tu celu ;)</i></h4>
-
 </div>
+
+<text style="position: absolute; left: 10%; bottom: 80px; font-size: 14px; color: white;">Uruguay</text>
+<text style="position: absolute; right: 10%; bottom: 80px; font-size: 14px; color: white;">Londres</text>
 
 <div id="plane">✈️</div>
 
+<div id="installBanner">📲 Toca aquí para instalar esta App en tu celular</div>
+
 <script>
-// SERVICE WORKER
+// --- 1. REGISTRO DEL SERVICE WORKER ---
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      console.log('Service Worker registrado', reg);
+    }).catch(err => {
+      console.log('Error al registrar Service Worker', err);
+    });
+  });
 }
 
-// FECHAS
-const start = new Date();
-const target = new Date("May 21, 2026");
-const totalDays = Math.ceil((target - start)/(1000*60*60*24));
+// --- 2. LÓGICA DE INSTALACIÓN (PWA) ---
+let deferredPrompt;
+const installBanner = document.getElementById('installBanner');
 
-// FOTOS
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Previene que aparezca el mini-infobar de Chrome
+  e.preventDefault();
+  // Guarda el evento para dispararlo luego
+  deferredPrompt = e;
+  // Muestra nuestra barra personalizada
+  installBanner.style.display = 'block';
+});
+
+installBanner.addEventListener('click', async () => {
+  // Oculta la barra
+  installBanner.style.display = 'none';
+  // Muestra el prompt de instalación nativo
+  deferredPrompt.prompt();
+  // Espera a que el usuario responda
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+});
+
+// --- 3. FECHAS Y MENSAJES ---
+const target = new Date("May 21, 2026 00:00:00");
 const images = ["foto1.jpg","foto2.jpg","foto3.jpg","foto4.jpg","foto5.jpg","foto6.jpg","foto7.jpg"];
 
-
-// MENSAJES (uno por día dinámico)
 function generarMensaje(dias) {
-  if (dias > 40) return "Aún falta mi bebota… pero ya te estoy extrañando ❤️";
-  if (dias > 35) return "Cada día que pasa me acerca a vos";
-  if (dias > 30) return "Ya empieza a sentirse… falta menos";
-  if (dias > 20) return "Contando los días para abrazarte";
-  if (dias > 15) return "Mi bebota… ya casi estoy ahí";
-  if (dias > 10) return "Cada vez más cerca ❤️";
-  if (dias > 7) return "Falta muy poquito…";
-  if (dias > 5) return "Ya casi…";
-  if (dias > 3) return "Contando horas";
-  if (dias > 1) return "Mañana nos vemos ❤️";
-  if (dias === 1) return "Es hoy… voy a abrazarte ❤️";
-  return "Ya estoy con vos ❤️";
+  const mensajes = {
+    45: "45 días, mi bebo. Aún falta un trecho, pero cada noche que pasa es un día menos para nuestro abrazo en Londres. ❤️",
+    44: "Mi bebota hermosa, acá en Uruguay ya estoy pensando en qué cositas ricas te voy a llevar. ¡Te extraño un montón!",
+    43: "Faltan 43 días. A veces la distancia pesa, pero el amor cruza el Atlántico en un segundo, mi bebo.",
+    42: "Hoy son exactamente 6 semanas para vernos. Se dice rápido, pero yo cuento cada segundo para estar con vos, Belén.",
+    41: "Un día a la vez, mi bebota. De a poquito se va achicando esa distancia entre los dos.",
+    40: "Llegamos a la barrera de los 40, mi bebo. ¡Esto ya empezó a moverse en serio! Te amo.",
+    39: "39 días. Me imagino caminando por Londres con vos y se me infla el corazón de alegría.",
+    38: "Falta un día menos que ayer, bebota. Te mando el abrazo más apretado desde acá hasta allá.",
+    37: "Ya tengo la cabeza en el viaje. Empezando a hacer listas y a imaginar el momento en que te vea.",
+    36: "36 días... El tiempo pasa volando cuando pienso en esa sonrisa tuya, mi bebo.",
+    35: "¡5 semanas justas! Ya casi podemos empezar a tachar los días en el almanaque con más ganas, bebota.",
+    34: "Cada día que pasa me acerca a vos. Te extraño una barbaridad, mi bebo lindo.",
+    33: "Ya pasamos el primer tercio de la espera desde que empezamos a contar. ¡Falta menos, Belén!",
+    32: "Hoy me desperté pensando en el frío que debe hacer allá, pero yo voy a llevar todo el calor para abrazarte, bebota.",
+    31: "Solo un mes y un poquitito más. Preparate porque te voy a llenar de besos, mi bebo.",
+    30: "¡30 días redondos! Un mesecito nada más. Ya se siente en el aire que el viaje está ahí nomás.",
+    29: "Ya pasamos la barrera de los 30. ¡Empezó la cuenta regresiva de verdad, mi bebota!",
+    28: "Exactamente 4 semanas. Ya tengo ganas de ir armando la valija, bebo, ¡no doy más de la ansiedad!",
+    27: "27 días. Sigo restando numeritos y mi corazón sigue sumando ganas de verte.",
+    26: "Pensar que en 26 días voy a cruzar el océano solo para decirte frente a frente cuánto te amo, mi bebo.",
+    25: "Cada vez falta menos para cambiar estas pantallas por un abrazo de verdad, mi bebota.",
+    24: "24 días. ¿Ya me estás haciendo lugar por allá? Mirá que voy con muchas ganas de malcriarte.",
+    23: "Me paso mirando pasajes y las reservas. Todo para asegurarme de que este sueño de verte, mi bebo, ya casi es realidad.",
+    22: "22 días... Ya estoy que camino por las paredes de las ganas de verte, mi bebota.",
+    21: "¡3 semanas! Solo 21 días nos separan. El pasaje de Uruguay a Londres ya me quema en las manos.",
+    20: "Entramos en los 'veintialgo', mi bebo. Ya puedo casi oler ese té inglés y sentir tu abrazo.",
+    19: "19 días. A partir de ahora los días se van a pasar volando, preparate bebota.",
+    18: "Hoy me puse a aprontar mentalmente la ropa para el viaje. Ya tengo todo casi listo para ir a verte, mi bebo.",
+    17: "17 días. Seguimos bajando la cuenta. ¡Qué ganas de caminar del brazo con vos por allá, Belén!",
+    16: "Cada día falta menos para escucharte decirme cosas lindas en persona. Te extraño un montón, bebota.",
+    15: "¡Llegamos a la quincena! Solo 15 días, mi bebo. Ya casi, casi estoy ahí con vos.",
+    14: "Dos semanas. 14 días exactos para el reencuentro más lindo del mundo. Aguantá un poquito más, Belén.",
+    13: "13 días... La ansiedad es tremenda, pero la alegría es mucho más grande, mi bebota hermosa.",
+    12: "Doce días. Ya empecé a guardar alfajores y cosas ricas de acá en la valija para vos, bebo.",
+    11: "11 días y contando... Me voy a subir a ese avión con el corazón a mil por hora para verte.",
+    10: "¡10 días! Llegamos a los números redondos. Cada vez más cerca, mi bebota querida.",
+    9: "Un solo dígito a partir de hoy. Ya es un hecho, Belén. Falta la nada misma.",
+    8: "8 días. Se viene, se viene el viaje... y se viene el abrazo más infinito, mi bebo.",
+    7: "¡Una semana! Solo 7 diítas. Ya casi ni duermo de la emoción, mi bebota hermosa.",
+    6: "Faltan 6 días. Qué locura pensar que en menos de una semana te estoy viendo, mi bebo.",
+    5: "5 días, Belén... Empezamos a contar con los dedos de una sola mano. Ya casi, ya casi...",
+    4: "4 días. Prepará los brazos porque cuando llegue no te voy a soltar más, bebo.",
+    3: "¡3 días! Contando las horas, los minutos y los segundos para cruzar el charco grande. Te amo, bebota.",
+    2: "2 días. La valija está cerrada y el corazón abierto. Qué emoción tan grande tengo, Belén.",
+    1: "¡Es mañana, mi bebo! No lo puedo creer. Mañana al fin me subo a ese avión para estar con vos.",
+    0: "¡Es hoy, Belén! ¡Es hoy, mi bebota hermosa! El viaje arranca ya y en nada te estoy abrazando con toda mi alma. ❤️"
+  };
+
+  if (dias < 0) return "¡Ya estoy con vos, mi bebota hermosa! A disfrutar juntos cada segundo. ❤️";
+  if (dias > 45) return `Aún faltan ${dias} días, mi bebo... pero desde ya te estoy extrañando una barbaridad ❤️`;
+  
+  return mensajes[dias];
 }
 
-// UPDATE
+// --- 4. ACTUALIZACIÓN DE PANTALLA ---
+const start = new Date("April 6, 2026"); // Fecha de inicio para calcular el progreso del avión
+const totalDays = Math.ceil((target - start)/(1000*60*60*24));
+
 function update() {
   const now = new Date();
   const dias = Math.ceil((target - now)/(1000*60*60*24));
 
-  document.getElementById("countdown").innerText = dias + " días";
+  document.getElementById("countdown").innerText = dias > 0 ? dias + " días" : "¡Día Cero!";
   document.getElementById("message").innerText = generarMensaje(dias);
 
-  // fondo
-  document.getElementById("bg").style.backgroundImage =
-    "url('" + images[dias % images.length] + "')";
+  // rotar fondo
+  if(images.length > 0) {
+    document.getElementById("bg").style.backgroundImage = "url('" + images[Math.abs(dias) % images.length] + "')";
+  }
 
-  // avión
-  const progreso = 1 - (dias / totalDays);
+  // progreso avión
+  let progreso = 1 - (dias / totalDays);
+  if(progreso > 1) progreso = 1;
+  if(progreso < 0) progreso = 0;
   document.getElementById("plane").style.left = (10 + progreso*80) + "%";
 
-  // pantalla final
   if (dias <= 0) {
     document.getElementById("content").innerHTML =
-      "<h1>❤️ Ya estoy en Londres ❤️</h1><p>Estoy yendo a abrazarte, mi bebota...</p>";
+      "<h1>❤️ Ya estoy en Londres ❤️</h1><p style='font-size: 24px'>Estoy yendo a abrazarte, mi bebota...</p>";
   }
 }
 
 update();
-setInterval(update, 3600000);
+setInterval(update, 3600000); // Actualiza cada hora si deja la app abierta
 
-</script>
-
-<!-- 🔔 NOTIFICACIONES AVANZADAS -->
-<script>
+// --- 5. LÓGICA DE NOTIFICACIONES ---
 async function iniciarNotificaciones() {
-  if (Notification.permission !== "granted") {
+  if (!("Notification" in window)) return;
+
+  // Pide permiso
+  if (Notification.permission !== "granted" && Notification.permission !== "denied") {
     await Notification.requestPermission();
   }
 
-  function mensajeDiario(dias) {
-    if (dias > 30) return "Cada día falta menos para verte ❤️";
-    if (dias > 10) return "Ya casi estoy ahí, mi bebota";
-    if (dias > 3) return "Muy poquito… ❤️";
-    if (dias > 1) return "Mañana nos vemos ❤️";
-    if (dias === 1) return "Hoy te abrazo ❤️";
-    return "Ya estoy con vos ❤️";
-  }
-
-  function enviar() {
+  if (Notification.permission === "granted") {
     const dias = Math.ceil((target - new Date())/(1000*60*60*24));
+    const hoy = new Date().toDateString();
+    const ultimaNotificacion = localStorage.getItem("ultimaNotificacion");
 
-    new Notification("Mi bebota ❤️", {
-      body: mensajeDiario(dias),
-      icon: "foto_512x512.png"
-    });
+    // Enviamos notificación si hoy todavía no se envió
+    if (ultimaNotificacion !== hoy) {
+      navigator.serviceWorker.ready.then(function(registration) {
+        registration.showNotification("Mi bebota ❤️", {
+          body: generarMensaje(dias),
+          icon: "foto_512x512.png", // Asegúrate de tener este archivo
+          vibrate: [200, 100, 200]
+        });
+      });
+      localStorage.setItem("ultimaNotificacion", hoy);
+    }
   }
-
-  enviar();
-  setInterval(enviar, 86400000);
 }
 
+// Ejecutar la revisión de notificaciones al cargar
 iniciarNotificaciones();
+
+// También revisa cada 1 hora por si dejó la app abierta en segundo plano
+setInterval(() => {
+    iniciarNotificaciones();
+}, 3600000);
+
 </script>
 
 </body>

@@ -1,0 +1,18 @@
+<svg id="map" viewBox="0 0 1000 500">
+  <!-- línea de ruta -->
+  <path id="route"
+    d="M100,400 Q500,50 900,150"
+    stroke="white"
+    stroke-width="3"
+    fill="none"
+    stroke-dasharray="1000"
+    stroke-dashoffset="1000"
+  />
+
+  <!-- avión -->
+  <text id="planePath" font-size="30">✈️</text>
+
+  <!-- puntos -->
+  <circle cx="100" cy="400" r="5" fill="white"/>
+  <circle cx="900" cy="150" r="5" fill="white"/>
+</svg>
